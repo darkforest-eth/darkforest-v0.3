@@ -1,0 +1,7 @@
+{
+  "eslint.workingDirectories": ["./client"],
+  "slither.solcPath": "",
+  "slither.hiddenDetectors": [],
+  "solidity.packageDefaultDependenciesContractsDirectory": "",
+  "solidity.packageDefaultDependenciesDirectory": "eth/node_modules"
+}

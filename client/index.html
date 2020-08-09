@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Dark Forest, the world's first decentralized real-time strategy game. Built on Ethereum with zkSNARKs."
+    />
+    <meta property="og:title" content="Dark Forest" /> <!-- 70 char max for twitter -->
+    <meta property="og:type" content="game" />
+    <meta property="og:url" content="https://zkga.me" />
+    <meta property="og:image" content="https://zkga.me/public/og_image.png" /> <!-- Size: The recommended size for an OG Image is 1.91:1. The recommended pixel dimensions are 1200:630 -->
+    <meta property="og:description" content="Dark Forest, the world's first decentralized real-time strategy game. Built on Ethereum with zkSNARKs." /> <!-- 200 char max for twitter -->
+
+    <meta name="twitter:card" content="summary_large_image"></meta>
+    <meta name="twitter:site" content="@darkforest_eth"></meta>
+
+    <!-- favicon stuff -->
+    <link rel="shortcut icon" href="./public/favicons.ico" />
+    <link
+      rel="apple-touch-icon"
+      sizes="57x57"
+      href="./public/favicons.ico/apple-icon-57x57.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="60x60"
+      href="./public/favicons.ico/apple-icon-60x60.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="72x72"
+      href="./public/favicons.ico/apple-icon-72x72.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="76x76"
+      href="./public/favicons.ico/apple-icon-76x76.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="114x114"
+      href="./public/favicons.ico/apple-icon-114x114.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="./public/favicons.ico/apple-icon-120x120.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="144x144"
+      href="./public/favicons.ico/apple-icon-144x144.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="./public/favicons.ico/apple-icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./public/favicons.ico/apple-icon-180x180.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="./public/favicons.ico/android-icon-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./public/favicons.ico/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="./public/favicons.ico/favicon-96x96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./public/favicons.ico/favicon-16x16.png"
+    />
+    <link rel="manifest" href="./public/manifest.json" />
+    <meta name="msapplication-TileColor" content="#080808" />
+    <meta
+      name="msapplication-TileImage"
+      content="./public/favicons.ico/ms-icon-144x144.png"
+    />
+    <meta name="theme-color" content="#080808" />
+
+  <link rel="shortcut icon" href="./public/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="57x57" href="./public/icons/apple-icon-57x57.png">
+  <link rel="apple-touch-icon" sizes="60x60" href="./public/icons/apple-icon-60x60.png">
+  <link rel="apple-touch-icon" sizes="72x72" href="./public/icons/apple-icon-72x72.png">
+  <link rel="apple-touch-icon" sizes="76x76" href="./public/icons/apple-icon-76x76.png">
+  <link rel="apple-touch-icon" sizes="114x114" href="./public/icons/apple-icon-114x114.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="./public/icons/apple-icon-120x120.png">
+  <link rel="apple-touch-icon" sizes="144x144" href="./public/icons/apple-icon-144x144.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="./public/icons/apple-icon-152x152.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./public/icons/apple-icon-180x180.png">
+  <link rel="icon" type="image/png" sizes="192x192"  href="./public/icons/android-icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./public/icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="./public/icons/favicon-96x96.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./public/icons/favicon-16x16.png">
+  <link rel="manifest" href="./public/icons/manifest.json">
+  <meta name="msapplication-TileColor" content="#080808">
+  <meta name="msapplication-TileImage" content="./public/icons/ms-icon-144x144.png">
+  <meta name="theme-color" content="#080808">
+
+    <script src="public/websnark/websnark.js"></script>
+    <script>
+      fetch('./public/proving_key_init.bin');
+    </script>
+    <script>
+      fetch('./public/proving_key_move.bin');
+    </script>
+    <title>Dark Forest</title>
+  </head>
+
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>

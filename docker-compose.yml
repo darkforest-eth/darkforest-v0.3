@@ -1,0 +1,43 @@
+version: "2"
+services:
+  #mockchain:
+  #  build: mockchain
+  #  image: bgu33/df-mockchain
+  #  expose:
+  #    - 3000
+  webclient:
+    build: .
+    image: bgu33/darkforest
+    expose:
+      - 3000
+    environment:
+      VIRTUAL_HOST: localhost,zkga.me,www.zkga.me
+      LETSENCRYPT_HOST: www.zkga.me,zkga.me
+      LETSENCRYPT_EMAIL: briangu33@gmail.com
+    volumes:
+      - ./webserver/data:/webserver/data
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    ports:
+    - "80:80"
+    - "3000:3000"
+    - "443:443"
+    volumes:
+    - /etc/nginx/certs:/etc/nginx/certs:ro
+    - /etc/nginx/vhost.d
+    - /usr/share/nginx/html
+    - /var/run/docker.sock:/tmp/docker.sock:ro
+    labels:
+      - "com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy"
+    environment:
+      HSTS: 'off'
+  nginx-proxy-ssl:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes:
+    - /etc/nginx/certs:/etc/nginx/certs:rw
+    - /var/run/docker.sock:/var/run/docker.sock
+    volumes_from:
+    - nginx-proxy
+    environment:
+      ACME_CA_URI: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      NGINX_PROXY_CONTAINER: "nginx-proxy"

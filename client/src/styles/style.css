@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@300&display=swap');
+
+html,
+body,
+#root {
+  height: 100%;
+  background: black;
+}
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+body {
+  font-family: 'Inconsolata', monospace;
+  font-weight: 300;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* media queries */
+/* TODO we should technically use sass or something for this but idk how */
+@media (max-width: 660px) {
+  .terminal-wrapper {
+    width: 100%;
+    padding: 1.5em 2em;
+  }
+}
