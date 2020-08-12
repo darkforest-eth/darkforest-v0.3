@@ -79,7 +79,7 @@ export default function ControllableCanvas() {
         return () => {};
       }
 
-      Viewport.initialize(gameUIManager, 250, width, height, canvas);
+      Viewport.initialize(gameUIManager, 250, canvas);
 
       CanvasRenderer.initialize(canvas, gameUIManager);
       // We can't attach the wheel event onto the canvas due to:
@@ -97,7 +97,7 @@ export default function ControllableCanvas() {
         uiEmitter.removeListener(UIEmitterEvent.UIChange, doResize);
       };
     }
-  }, [gameUIManager, uiEmitter, doResize, height, width]);
+  }, [gameUIManager, uiEmitter, doResize]);
 
   if (!gameUIManager) {
     console.error('GameUIManager context is null');

@@ -265,7 +265,7 @@ export const MenuBar = styled.div`
   display: flex;
   flex-direction: row;
 
-  & > div {
+  & > span {
     margin-left: 4pt;
     &:first-child {
       margin-left: 0;

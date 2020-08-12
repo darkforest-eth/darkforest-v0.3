@@ -61,5 +61,4 @@ const dfstyles = {
     },
   },
 };
-
 export default dfstyles;

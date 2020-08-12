@@ -30,11 +30,55 @@ import PlanetDexPane from './GameWindowPanes/PlanetDexPane';
 import UpgradeDetailsPane from './GameWindowPanes/UpgradeDetailsPane';
 import TwitterVerifyPane from './GameWindowPanes/TwitterVerifyPane';
 import TwitterBroadcastPane from './TwitterBroadcastPane';
+import ZoomPane from './GameWindowPanes/ZoomPane';
+import Tooltip from './GameWindowPanes/Tooltip';
+import {
+  SilverTooltipPane,
+  PopulationTooltipPane,
+  RangeTooltipPane,
+  ModalHelpTooltipPane,
+  ModalPlanetDetailsTooltipPane,
+  ModalPlanetDexTooltipPane,
+  ModalUpgradeDetailsTooltipPane,
+  ModalLeaderboardTooltipPane,
+  ModalTwitterVerificationTooltipPane,
+  ModalTwitterBroadcastTooltipPane,
+  SelectedSilverTooltipPane,
+  SelectedPopulationTooltipPane,
+  RankTooltipPane,
+  ScoreTooltipTooltipPane,
+  TwitterHandleTooltipPane,
+  MiningPauseTooltipPane,
+  MiningTargetTooltipPane,
+  HashesPerSecTooltipPane,
+  CurrentMiningTooltipPane,
+  MinPopTooltipPane,
+  Time90TooltipPane,
+  Time50TooltipPane,
+  BonusTooltipPane,
+  PopGrowthTooltipPane,
+  SilverGrowthTooltipPane,
+  SilverCapTooltipPane,
+  SilverMaxTooltipPane,
+  PiratesTooltipPane,
+  UpgradesTooltipPane,
+  BonusPopCapTooltipPane,
+  PlanetRankTooltipPane,
+  BonusPopGroTooltipPane,
+  BonusSilCapTooltipPane,
+  BonusSilGroTooltipPane,
+  BonusRangeTooltipPane,
+  MaxLevelTooltipPane,
+  SilverProdTooltipPane,
+  ClownTooltipPane,
+} from './GameWindowPanes/TooltipPanes';
 
 export const enum GameWindowZIndex {
   Toggler = 3,
   MenuBar = 4,
   Modal = 1000,
+
+  Tooltip = 16000000,
 }
 
 export default function GameWindow() {
@@ -48,6 +92,25 @@ export default function GameWindow() {
   const upgradeDetHook = useState<boolean>(false);
   const twitterVerifyHook = useState<boolean>(false);
   const twitterBroadcastHook = useState<boolean>(false);
+
+  const [score, setScore] = useState<number>(0);
+  const [rank, setRank] = useState<number>(0);
+
+  useEffect(() => {
+    if (!uiManager) return;
+
+    const onKeypress = (e) => {
+      if (e.key === 'Escape') {
+        setSelected(null);
+        uiManager?.setSelectedPlanet(null);
+      }
+    };
+
+    document.addEventListener('keydown', onKeypress);
+    return () => {
+      document.removeEventListener('keydown', onKeypress);
+    };
+  }, [uiManager]);
 
   const [tick, setTick] = useState<number>(0);
   const update = useCallback(() => {
@@ -68,9 +131,10 @@ export default function GameWindow() {
       if (!uiManager) return;
       // need to copy in order to refresh the refs for react
       setSelected(_.clone(uiManager.getSelectedPlanet()));
+      localStorage.setItem('lastUpdated', Date.now().toString());
     };
 
-    const intervalId = setInterval(refreshUI, 500);
+    const intervalId = setInterval(refreshUI, 2000);
     // const intervalId = 0;
 
     const uiEmitter = UIEmitter.getInstance();
@@ -87,11 +151,65 @@ export default function GameWindow() {
 
   return (
     <WindowWrapper>
+      <Tooltip>
+        <SilverTooltipPane />
+        <PopulationTooltipPane />
+        <RangeTooltipPane />
+
+        <SelectedSilverTooltipPane selected={selected} />
+        <SelectedPopulationTooltipPane selected={selected} />
+
+        <RankTooltipPane />
+        <ScoreTooltipTooltipPane />
+        <TwitterHandleTooltipPane />
+        <MiningPauseTooltipPane />
+        <MiningTargetTooltipPane />
+        <BonusTooltipPane />
+        <PlanetRankTooltipPane selected={selected} />
+
+        <HashesPerSecTooltipPane />
+        <CurrentMiningTooltipPane />
+
+        <PiratesTooltipPane />
+        <UpgradesTooltipPane />
+
+        <BonusPopCapTooltipPane />
+        <BonusPopGroTooltipPane />
+        <BonusSilCapTooltipPane selected={selected} />
+        <BonusSilGroTooltipPane selected={selected} />
+        <BonusRangeTooltipPane />
+        <MaxLevelTooltipPane />
+        <SilverProdTooltipPane />
+
+        <ClownTooltipPane selected={selected} />
+
+        <MinPopTooltipPane />
+        <Time50TooltipPane />
+        <Time90TooltipPane />
+
+        <PopGrowthTooltipPane />
+        <SilverGrowthTooltipPane />
+        <SilverCapTooltipPane />
+        <SilverMaxTooltipPane />
+
+        <ModalHelpTooltipPane />
+        <ModalPlanetDetailsTooltipPane />
+        <ModalLeaderboardTooltipPane />
+        <ModalPlanetDexTooltipPane />
+        <ModalUpgradeDetailsTooltipPane />
+        <ModalTwitterVerificationTooltipPane />
+        <ModalTwitterBroadcastTooltipPane />
+      </Tooltip>
+
       {/* modals */}
       <ModalWrapper>
         <PlanetDetailsPane hook={planetDetHook} selected={selected} />
         <HelpPane hook={helpHook} />
-        <LeaderboardPane hook={leaderboardHook} />
+        <LeaderboardPane
+          hook={leaderboardHook}
+          setScore={setScore}
+          setRank={setRank}
+        />
         <PlanetDexPane
           selected={selected}
           hook={planetdexHook}
@@ -105,7 +223,12 @@ export default function GameWindow() {
       <MainWindow>
         {/* sidebar */}
         <Sidebar>
-          <PlayerInfoPane _updater={tick} hook={twitterVerifyHook} />
+          <PlayerInfoPane
+            _updater={tick}
+            hook={twitterVerifyHook}
+            score={score}
+            rank={rank}
+          />
           <MiningPane _updater={tick} />
           <FleetPane selected={selected} />
           <PlanetDexPane
@@ -137,6 +260,7 @@ export default function GameWindow() {
             <ControllableCanvas />
           </CanvasWrapper>
           <CoordsPane />
+          <ZoomPane />
         </CanvasContainer>
       </MainWindow>
 

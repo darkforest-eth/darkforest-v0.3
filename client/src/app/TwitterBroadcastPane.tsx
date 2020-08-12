@@ -73,7 +73,11 @@ export default function TwitterBroadcastPane({
     if (twitter) name = '@' + twitter;
 
     const str = `I've found ${name}'s planet at (${x}, ${y})! Verify my ZK proofs at @darkforest_eth (https://zkga.me)`;
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURI(str)}`);
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURI(
+        str
+      )}&hashtags=darkforest`
+    );
   };
 
   const [account, setAccount] = useState<EthAddress | null>(null); // consider moving this one to parent

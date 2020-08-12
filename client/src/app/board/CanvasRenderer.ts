@@ -239,51 +239,58 @@ class CanvasRenderer {
 
     this.drawAsteroidBelt(center, radius, planet);
 
-    if (hasOwner(planet) && population > 0) {
-      let popString = population.toString();
-      let lockedPop = 0;
-      for (const unconfirmedMove of planet.unconfirmedDepartures) {
-        lockedPop += unconfirmedMove.forces;
-      }
-      if (lockedPop > 0) {
-        popString += ` (-${Math.floor(lockedPop)})`;
-      }
-      this.drawText(
-        popString,
-        15,
-        {
-          x: center.x,
-          y: center.y - 1.1 * radius - (planet.owner ? 0.75 : 0.25),
-        },
-        this.gameUIManager.isOwnedByMe(planet) ? 'white' : getOwnerColor(planet)
-      );
-    } else if (!hasOwner(planet) && population > 0) {
-      const current = this.gameUIManager.getDetailLevel();
-      const det = this.gameUIManager.getPlanetDetailLevel(planet.locationId);
-      if (det === null) return;
-      if (det > current) {
+    const current = this.gameUIManager.getDetailLevel();
+    const det = this.gameUIManager.getPlanetDetailLevel(planet.locationId);
+    if (det === null) return;
+    if (det > current + 1) {
+      if (hasOwner(planet) && population > 0) {
+        let popString = population.toString();
+        let lockedPop = 0;
+        for (const unconfirmedMove of planet.unconfirmedDepartures) {
+          lockedPop += unconfirmedMove.forces;
+        }
+        if (lockedPop > 0) {
+          popString += ` (-${Math.floor(lockedPop)})`;
+        }
         this.drawText(
-          population.toString(),
+          popString,
           15,
           {
             x: center.x,
             y: center.y - 1.1 * radius - (planet.owner ? 0.75 : 0.25),
           },
-          '#444455'
+          this.gameUIManager.isOwnedByMe(planet)
+            ? 'white'
+            : getOwnerColor(planet)
+        );
+      } else if (!hasOwner(planet) && population > 0) {
+        const current = this.gameUIManager.getDetailLevel();
+        const det = this.gameUIManager.getPlanetDetailLevel(planet.locationId);
+        if (det === null) return;
+        if (det > current) {
+          this.drawText(
+            population.toString(),
+            15,
+            {
+              x: center.x,
+              y: center.y - 1.1 * radius - (planet.owner ? 0.75 : 0.25),
+            },
+            '#444455'
+          );
+        }
+      }
+
+      if (hasOwner(planet) && (planet.silverGrowth > 0 || planet.silver > 0)) {
+        this.drawText(
+          silver.toString(),
+          15,
+          {
+            x: center.x,
+            y: center.y + 1.1 * radius + (planet.owner ? 0.75 : 0.25),
+          },
+          'gold'
         );
       }
-    }
-
-    if (hasOwner(planet) && (planet.silverGrowth > 0 || planet.silver > 0)) {
-      this.drawText(
-        silver.toString(),
-        15,
-        {
-          x: center.x,
-          y: center.y + 1.1 * radius + (planet.owner ? 0.75 : 0.25),
-        },
-        'gold'
-      );
     }
   }
 
@@ -407,6 +414,13 @@ class CanvasRenderer {
       dfstyles.game.rangecolors.dash,
       true
     );
+    this.drawText(
+      '100%',
+      15,
+      { x, y: y + 4.3219 * selected.range },
+      dfstyles.game.rangecolors.dash
+    );
+
     this.drawLoopWithCenter(
       { x, y },
       3.3219 * selected.range, // log_2 (50/5)
@@ -414,6 +428,13 @@ class CanvasRenderer {
       dfstyles.game.rangecolors.dash,
       true
     );
+    this.drawText(
+      '50%',
+      15,
+      { x, y: y + 3.3219 * selected.range },
+      dfstyles.game.rangecolors.dash
+    );
+
     this.drawLoopWithCenter(
       { x, y },
       2.3219 * selected.range, // log_2 (25/5)
@@ -421,12 +442,19 @@ class CanvasRenderer {
       dfstyles.game.rangecolors.dash,
       true
     );
+    this.drawText(
+      '25%',
+      15,
+      { x, y: y + 2.3219 * selected.range },
+      dfstyles.game.rangecolors.dash
+    );
 
     if (selected.owner === emptyAddress) return;
 
-    let percent = uiManager.getForcesSending(selected.locationId); // [0, 100]
-    percent *= selected.population / selected.populationCap;
-    let ratio = Math.log(percent / 5) / Math.log(2);
+    const forcesSending = uiManager.getForcesSending(selected.locationId); // [0, 100]
+    const scaled =
+      (forcesSending * selected.population) / selected.populationCap;
+    let ratio = Math.log(scaled / 5) / Math.log(2);
     ratio = Math.max(ratio, 0);
 
     this.drawLoopWithCenter(
@@ -435,6 +463,12 @@ class CanvasRenderer {
       1,
       dfstyles.game.rangecolors.dashpop,
       true
+    );
+    this.drawText(
+      `${forcesSending}%`,
+      15,
+      { x, y: y + ratio * selected.range },
+      dfstyles.game.rangecolors.dashpop
     );
   }
 

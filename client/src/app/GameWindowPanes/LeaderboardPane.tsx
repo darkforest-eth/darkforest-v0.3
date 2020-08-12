@@ -5,10 +5,14 @@ import GameUIManager from '../board/GameUIManager';
 import GameUIManagerContext from '../board/GameUIManagerContext';
 import { EthAddress, Planet } from '../../_types/global/GlobalTypes';
 import { Sub } from '../../components/Text';
+import dfstyles from '../../styles/dfstyles';
+import { PlanetThumb, PlanetLink } from './PlanetDexPane';
 
 const LeaderboardWrapper = styled.div`
   width: 36em;
   min-height: 15em;
+  max-height: 24em;
+  overflow-y: scroll;
 
   & > div {
     width: 100%;
@@ -16,21 +20,52 @@ const LeaderboardWrapper = styled.div`
     flex-direction: row;
     justify-content: space-between;
 
+    height: 30px;
+
     & > span {
       margin-left: 0.25em;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
       &:last-child {
         margin-left: 0;
       }
+      &:nth-child(1) {
+        // rank
+        width: 3em;
+      }
+      &:nth-child(2) {
+        // playername
+        flex-grow: 1;
+      }
+      &:nth-child(3) {
+        // planet icons
+        width: 10em;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      &:nth-child(4) {
+        width: 4em;
+      }
     }
 
-    & > span:nth-child(1) {
-      flex-grow: 1;
+    // lmao make this shit a class
+    &:not(:first-child) > span:nth-child(3) > span {
+      width: 3em;
+      cursor: pointer;
+      transition: filter 0.2s;
+      &:hover {
+        filter: brightness(80%);
+      }
     }
-    & > span:nth-child(2) {
-      width: 6em;
-    }
-    & > span:nth-child(3) {
-      width: 4em;
+  }
+
+  & a {
+    &:hover {
+      text-decoration: underline;
+      color: ${dfstyles.colors.subtext};
     }
   }
 `;
@@ -42,9 +77,23 @@ type ScoreboardEntry = {
   sortedPlanets: Planet[];
 };
 
-export default function LeaderboardPane({ hook }: { hook: ModalHook }) {
+export default function LeaderboardPane({
+  hook,
+  setScore,
+  setRank,
+}: {
+  hook: ModalHook;
+  setScore: (x: number) => void;
+  setRank: (x: number) => void;
+}) {
   const uiManager = useContext<GameUIManager | null>(GameUIManagerContext);
   const [scoreboard, setScoreboard] = useState<ScoreboardEntry[]>([]);
+
+  const [account, setAccount] = useState<EthAddress | null>(null);
+  useEffect(() => {
+    if (!uiManager) return;
+    setAccount(uiManager.getAccount());
+  }, [uiManager]);
 
   const [visible] = hook;
 
@@ -84,13 +133,21 @@ export default function LeaderboardPane({ hook }: { hook: ModalHook }) {
       const entries: ScoreboardEntry[] = Object.values(scoreboardMap);
       entries.sort((a, b) => b.score - a.score);
       setScoreboard(entries);
+
+      for (let i = 0; i < entries.length; i++) {
+        if (entries[i].playerId === account) {
+          setScore(entries[i].score);
+          setRank(i + 1);
+        }
+      }
     }
-  }, [uiManager, visible]);
+  }, [uiManager, visible, account, setScore, setRank]);
 
   return (
     <ModalPane hook={hook} title='Leaderboard' name={ModalName.Leaderboard}>
       <LeaderboardWrapper>
         <div>
+          <span></span>
           <span>
             <Sub>
               <u>Player</u>
@@ -98,21 +155,40 @@ export default function LeaderboardPane({ hook }: { hook: ModalHook }) {
           </span>
           <span>
             <Sub>
-              <u>Score</u>
-            </Sub>
-          </span>
-          <span>
-            <Sub>
-              <u>Planets</u>
+              <u>Top Planets</u>
             </Sub>
           </span>
         </div>
         {scoreboard.map((entry, idx) => (
-          <div key={idx}>
-            <span>{entry.twitter ? '@' + entry.twitter : entry.playerId}</span>
-            <span>{Math.floor(entry.score)}</span>
+          <div
+            key={idx}
+            style={{
+              background:
+                entry.playerId === account
+                  ? dfstyles.colors.backgroundlight
+                  : undefined,
+            }}
+          >
             <span>
-              <Sub>{entry.sortedPlanets.length}</Sub>
+              <Sub>#{idx + 1}</Sub>
+            </span>
+            <span>
+              {entry.twitter ? (
+                <a href={`http://twitter.com/${entry.twitter}`}>
+                  @{entry.twitter}
+                </a>
+              ) : (
+                <span>{entry.playerId}</span>
+              )}
+            </span>
+            <span>
+              {entry.sortedPlanets.slice(0, 3).map((planet, i) => (
+                <span key={i}>
+                  <PlanetLink planet={planet}>
+                    <PlanetThumb planet={planet} />
+                  </PlanetLink>
+                </span>
+              ))}
             </span>
           </div>
         ))}

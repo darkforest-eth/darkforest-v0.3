@@ -9,7 +9,11 @@ import {
   EthAddress,
   UpgradeBranch,
 } from '../../_types/global/GlobalTypes';
-import { getPlanetRank, getPlanetShortHash } from '../../utils/Utils';
+import {
+  getPlanetRank,
+  getPlanetShortHash,
+  isFullRank,
+} from '../../utils/Utils';
 import { BranchIcon, RightarrowIcon } from '../Icons';
 import dfstyles from '../../styles/dfstyles';
 import GameUIManagerContext from '../board/GameUIManagerContext';
@@ -17,6 +21,8 @@ import GameUIManager from '../board/GameUIManager';
 import { getIconClass, UpgradeIdx } from './UpgradeInfoPane';
 import { getPlanetTitle, getPlanetName } from '../../utils/ProcgenUtils';
 import { emptyAddress } from '../../utils/CheckedTypeUtils';
+import { TooltipTrigger } from './Tooltip';
+import { TooltipName } from '../../utils/WindowManager';
 
 const UpgradeDetailsWrapper = styled.div`
   width: 30em;
@@ -34,8 +40,13 @@ const SectionTitle = styled.div`
   margin-top: ${SECTION_MARGIN};
 
   & > span:nth-child(2n + 1) {
+    // not the arrow
     flex-grow: 1;
+    & > span {
+      display: inline-block;
+    }
   }
+
   & > span:nth-child(2) {
     // arrow
     text-align: center;
@@ -225,7 +236,7 @@ const VisName = ({
     <_VisName>
       <Sub>{['Silver', 'Population', 'Range'][branch]}</Sub>
       <Sub>
-        (lv<White>{planet.upgradeState[branch]}</White>)
+        (Lv<White>{planet.upgradeState[branch]}</White>)
       </Sub>
     </_VisName>
   );
@@ -303,6 +314,11 @@ export default function UpgradeDetailsPane({
 
   // try to make sure idx always points at a valid upgrade
   useEffect(() => {
+    if (isFullRank(selected)) {
+      setIdx(null);
+      return;
+    }
+
     if (!selected || selected.planetLevel === 0) {
       setIdx(null);
       return;
@@ -332,12 +348,13 @@ export default function UpgradeDetailsPane({
 
   const getStat = (stat: string): number => {
     if (!selected) return 0;
-    return selected[stat];
+    if (stat === 'silverGrowth') return selected[stat] * 60;
+    else return selected[stat];
   };
   const stat = (stat: string): string => {
     const num = getStat(stat);
     if (num % 1.0 === 0) return num.toFixed(0);
-    else return num.toFixed(1);
+    else return num.toFixed(2);
   };
   const getStatFuture = (stat: string): number => {
     if (!selected) return 0;
@@ -358,20 +375,20 @@ export default function UpgradeDetailsPane({
       mult = upgrade.rangeMultiplier / 100;
     }
 
-    return selected[stat] * mult;
+    return getStat(stat) * mult;
   };
   const statFuture = (stat: string): string => {
     const num = getStatFuture(stat);
     if (num % 1.0 === 0) return num.toFixed(0);
-    else return num.toFixed(1);
+    else return num.toFixed(2);
   };
   const getStatDiff = (stat: string): number => {
     return getStatFuture(stat) - getStat(stat);
   };
   const statDiff = (stat: string): React.ReactNode => {
     const diff: number = getStatDiff(stat);
-    if (diff < 0) return <Red>{diff.toFixed(1)}</Red>;
-    else if (diff > 0) return <Green>+{diff.toFixed(1)}</Green>;
+    if (diff < 0) return <Red>{diff.toFixed(2)}</Red>;
+    else if (diff > 0) return <Green>+{diff.toFixed(2)}</Green>;
     else return <Sub>0</Sub>;
   };
 
@@ -398,6 +415,7 @@ export default function UpgradeDetailsPane({
     const silverNeeded = getSilverNeeded();
     const silver = getSilver();
     if (silverNeeded === 0) return false;
+    if (isFullRank(selected)) return false;
     return silver >= silverNeeded;
   };
 
@@ -465,10 +483,10 @@ export default function UpgradeDetailsPane({
     const twitter = uiManager.getTwitter(selected.owner);
 
     if (selected.owner === emptyAddress)
-      return `Unclaimed ${shorthash} - ${str}`;
+      return `Unclaimed ${shorthash} ${planetname} - ${str}`;
 
     if (!twitter) return `${shorthash} ${planetname} - ${str}`;
-    else return `@${twitter} ${planetname} - ${str}`;
+    else return `@${twitter}'s ${shorthash} ${planetname} - ${str}`;
   };
 
   return (
@@ -477,13 +495,29 @@ export default function UpgradeDetailsPane({
         <UpgradeDetailsWrapper>
           <SectionTitle>
             <span>
-              {getTitle()} <Sub>(Rank {getRank()})</Sub>
+              <span>{getTitle()}</span>
+              <br />
+              <Sub>
+                (Rank{' '}
+                <TooltipTrigger needsShift name={TooltipName.Upgrades}>
+                  {getRank()}
+                </TooltipTrigger>
+                )
+              </Sub>
             </span>
             <span>
               <RightarrowIcon />
             </span>
             <span>
-              {getTitleFuture()} <Sub>(Rank {getRankFuture()})</Sub>
+              <span>{getTitleFuture()}</span>
+              <br />
+              <Sub>
+                (Rank{' '}
+                <TooltipTrigger needsShift name={TooltipName.Upgrades}>
+                  {getRankFuture()}
+                </TooltipTrigger>
+                )
+              </Sub>
             </span>
           </SectionTitle>
 

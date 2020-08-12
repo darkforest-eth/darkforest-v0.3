@@ -138,6 +138,14 @@ export default function GameLandingPage(_props: { replayMode: boolean }) {
 
   const advanceStateFromNone = async () => {
     const terminalEmitter = TerminalEmitter.getInstance();
+
+    const lastUpdated = localStorage.getItem('lastUpdated');
+    if (lastUpdated) {
+      const diff = Date.now() - parseInt(lastUpdated);
+      // 10 min
+      if (diff < 1000 * 60 * 10)
+        terminalEmitter.emit(TerminalEvent.SkipAllTyping);
+    }
     terminalEmitter.shell('df init');
     terminalEmitter.println('Initializing Dark Forest...');
 
@@ -570,7 +578,7 @@ export default function GameLandingPage(_props: { replayMode: boolean }) {
     }
 
     terminalEmitter.println(
-      'Press ENTER to find a home planet. This may take up to 60s.'
+      'Press ENTER to find a home planet. This may take up to 120s.'
     );
     await getUserInput();
     const success = await new Promise((resolve) => {
@@ -599,6 +607,8 @@ export default function GameLandingPage(_props: { replayMode: boolean }) {
     terminalEmitter.println('Press ENTER to begin.');
     await getUserInput();
     initState = InitState.COMPLETE;
+
+    terminalEmitter.emit(TerminalEvent.SkipAllTyping);
 
     setInitRenderState(InitRenderState.COMPLETE);
 

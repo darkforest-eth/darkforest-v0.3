@@ -8,6 +8,7 @@ import { formatNumber } from '../../utils/Utils';
 import WindowManager, {
   CursorState,
   WindowManagerEvent,
+  TooltipName,
 } from '../../utils/WindowManager';
 import UIEmitter, { UIEmitterEvent } from '../../utils/UIEmitter';
 import { WorldCoords } from '../../utils/Coordinates';
@@ -16,6 +17,7 @@ import { MIN_CHUNK_SIZE } from '../../utils/constants';
 import { Sub } from '../../components/Text';
 import { IconButton } from './ModalPane';
 import dfstyles from '../../styles/dfstyles';
+import { TooltipTrigger } from './Tooltip';
 
 const Row = styled.div`
   display: flex;
@@ -107,28 +109,42 @@ export default function MiningPane({ _updater: ticks }: { _updater: number }) {
       title={`Mining${mining ? '.'.repeat((ticks % 3) + 1) : ''}`}
       headerItems={
         <>
-          <span
-            className={
-              'clickable' +
-              (windowManager.getCursorState() === CursorState.Targeting
-                ? ' fill-target'
-                : '')
-            }
-            onClick={doTarget}
+          <TooltipTrigger
+            needsShift
+            name={TooltipName.MiningTarget}
+            style={{ height: '1.5em' }}
           >
-            <IconButton>
-              <TargetIcon />
-            </IconButton>
-          </span>
-          <span onClick={() => setMining((b) => !b)} className='clickable'>
-            <IconButton>{mining ? <PauseIcon /> : <PlayIcon />}</IconButton>
-          </span>
+            <span
+              className={
+                'clickable' +
+                (windowManager.getCursorState() === CursorState.Targeting
+                  ? ' fill-target'
+                  : '')
+              }
+              onClick={doTarget}
+            >
+              <IconButton>
+                <TargetIcon />
+              </IconButton>
+            </span>
+          </TooltipTrigger>
+          <TooltipTrigger
+            needsShift
+            name={TooltipName.MiningPause}
+            style={{ height: '1.5em' }}
+          >
+            <span onClick={() => setMining((b) => !b)} className='clickable'>
+              <IconButton>{mining ? <PauseIcon /> : <PlayIcon />}</IconButton>
+            </span>
+          </TooltipTrigger>
         </>
       }
     >
       <Row>
         <p>
-          <Sub># / sec</Sub>
+          <TooltipTrigger needsShift name={TooltipName.HashesPerSec}>
+            <Sub># / sec</Sub>
+          </TooltipTrigger>
         </p>
         <p>
           {mining && uiManager
@@ -138,7 +154,9 @@ export default function MiningPane({ _updater: ticks }: { _updater: number }) {
       </Row>
       <Row className='mining-mtop'>
         <p>
-          <Sub>Current</Sub>
+          <TooltipTrigger needsShift name={TooltipName.CurrentMining}>
+            <Sub>Current</Sub>
+          </TooltipTrigger>
         </p>
         <p>
           {pattern

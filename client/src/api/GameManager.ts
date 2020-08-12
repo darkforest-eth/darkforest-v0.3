@@ -167,13 +167,15 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     // get data from the contract
     const contractConstants = await ethereumAPI.getConstants();
     const players = await ethereumAPI.getPlayers();
-    const planets = await ethereumAPI.getPlanets();
     const worldRadius = await ethereumAPI.getWorldRadius();
 
     const arrivals: VoyageContractData = {};
     const planetVoyageIdMap: PlanetVoyageIdMap = {};
     const arrivalPromises: Promise<null>[] = [];
     const allArrivals = await ethereumAPI.getAllArrivals();
+    // fetch planets after allArrivals, since an arrival to a new planet might be sent
+    // while we are fetching
+    const planets = await ethereumAPI.getPlanets();
     for (const planetId in planets) {
       if (planets.hasOwnProperty(planetId)) {
         planetVoyageIdMap[planetId] = [];
@@ -505,8 +507,6 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     }
     this.getRandomHomePlanetCoords().then(async (args) => {
       const [{ x, y }, p] = args;
-      console.log('setting home coords.');
-      console.log(x, y);
       const homeCoords = { x, y };
       addAccountToBrowser(this.ethereumAPI.getContractAddress());
       await this.localStorageManager.setHomeCoords(homeCoords); // set this before getting the call result, in case user exits before tx confirmed

@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { PlanetSelectMessage } from '../GameWindowComponents';
+import { PlanetSelectMessage, Btn } from '../GameWindowComponents';
 import {
   Planet,
   PlanetResource,
@@ -21,6 +21,8 @@ import GameUIManagerContext from '../board/GameUIManagerContext';
 import { ModalPane, ModalHook, ModalName } from './ModalPane';
 import { getPlanetName } from '../../utils/ProcgenUtils';
 import { emptyAddress } from '../../utils/CheckedTypeUtils';
+import { TooltipTrigger } from './Tooltip';
+import { TooltipName } from '../../utils/WindowManager';
 
 const PlanetscapeWrapper = styled.div`
   width: 100%;
@@ -48,9 +50,9 @@ const DetailsTable = styled.table`
   width: 30em;
 `;
 const TimesTwo = () => (
-  <Sub>
+  <TooltipTrigger name={TooltipName.Bonus}>
     <Green>x2</Green>
-  </Sub>
+  </TooltipTrigger>
 );
 
 export default function PlanetDetailsPane({
@@ -81,8 +83,11 @@ export default function PlanetDetailsPane({
 
   useEffect(() => {
     if (!uiManager || !account) return;
-    if (!selected) setPlanetOwnerTwitter(null);
-    setPlanetOwnerTwitter(uiManager.getTwitter(account));
+    if (!selected) {
+      setPlanetOwnerTwitter(null);
+      return;
+    }
+    setPlanetOwnerTwitter(uiManager.getTwitter(selected.owner));
   }, [uiManager, selected, account]);
 
   if (!uiManager) return <>ERROR: UIManager NULL</>;
@@ -134,10 +139,23 @@ export default function PlanetDetailsPane({
     const twitter = uiManager.getTwitter(selected.owner);
 
     if (selected.owner === emptyAddress)
-      return `Unclaimed ${shorthash} - ${str}`;
+      return `Unclaimed ${shorthash} ${planetname} - ${str}`;
 
     if (!twitter) return `${shorthash} ${planetname} - ${str}`;
-    else return `@${twitter} ${planetname} - ${str}`;
+    else return `@${twitter}'s ${shorthash} ${planetname} - ${str}`;
+  };
+
+  const sharePlanet = (): void => {
+    const str = `I found an awesome level ${
+      selected?.planetLevel
+    } planet named ${getPlanetName(
+      selected
+    )}! @darkforest_eth (https://zkga.me/planet${selected?.locationId})`;
+    window.open(
+      `https://twitter.com/intent/tweet?text=${encodeURI(
+        str
+      )}&hashtags=darkforest`
+    );
   };
 
   return (
@@ -200,27 +218,48 @@ export default function PlanetDetailsPane({
             <tr>
               <td>
                 <Sub>
-                  Population {bonus && bonus[StatIdx.PopCap] && <TimesTwo />}
+                  <TooltipTrigger name={TooltipName.Population} needsShift>
+                    Population
+                  </TooltipTrigger>{' '}
+                  {bonus && bonus[StatIdx.PopCap] && <TimesTwo />}
                 </Sub>
               </td>
               <td>
-                {getFormatProp(selected, 'population')} <Sub>/</Sub>{' '}
-                {getFormatProp(selected, 'populationCap')}
+                {selected?.owner === emptyAddress && selected.population > 0 ? (
+                  <TooltipTrigger
+                    name={TooltipName.Pirates}
+                    display='inline-flex'
+                  >
+                    <span>{getFormatProp(selected, 'population')}</span>
+                  </TooltipTrigger>
+                ) : (
+                  <>{getFormatProp(selected, 'population')}</>
+                )}{' '}
+                <Sub>/</Sub> {getFormatProp(selected, 'populationCap')}
               </td>
               <td>
                 <Sub>
-                  Growth {bonus && bonus[StatIdx.PopGro] && <TimesTwo />}
+                  <TooltipTrigger
+                    name={TooltipName.PopulationGrowth}
+                    needsShift
+                  >
+                    Growth {bonus && bonus[StatIdx.PopGro] && <TimesTwo />}
+                  </TooltipTrigger>
                 </Sub>
               </td>
               <td>{getFormatProp(selected, 'populationGrowth')}</td>
             </tr>
             <tr>
               <td>
-                <Sub>Time to 50%</Sub>
+                <TooltipTrigger name={TooltipName.Time50} needsShift>
+                  <Sub>Time to 50%</Sub>
+                </TooltipTrigger>
               </td>
               <td>{getPop(50)}</td>
               <td>
-                <Sub>Time to 90%</Sub>
+                <TooltipTrigger name={TooltipName.Time90} needsShift>
+                  <Sub>Time to 90%</Sub>
+                </TooltipTrigger>
               </td>
               <td>{getPop(90)}</td>
             </tr>
@@ -232,7 +271,10 @@ export default function PlanetDetailsPane({
               <tr>
                 <td>
                   <Sub>
-                    Silver {bonus && bonus[StatIdx.ResCap] && <TimesTwo />}
+                    <TooltipTrigger name={TooltipName.Silver} needsShift>
+                      Silver
+                    </TooltipTrigger>{' '}
+                    {bonus && bonus[StatIdx.ResCap] && <TimesTwo />}
                   </Sub>
                 </td>
                 <td>
@@ -240,19 +282,20 @@ export default function PlanetDetailsPane({
                   {getFormatProp(selected, 'silverMax')}
                 </td>
                 <td>
-                  <Sub>
-                    Growth {bonus && bonus[StatIdx.ResGro] && <TimesTwo />}
-                  </Sub>
+                  <Sub>Growth</Sub>
                 </td>
                 <td>{getFormatProp(selected, 'silverGrowth')}</td>
               </tr>
               <tr>
                 <td>
-                  <Sub>Will grow to:</Sub>
+                  <Sub>
+                    Will grow to{' '}
+                    {bonus && bonus[StatIdx.ResGro] && <TimesTwo />}
+                  </Sub>
                 </td>
                 <td>{getFormatProp(selected, 'silverCap')}</td>
                 <td>
-                  <Sub>Time left:</Sub>
+                  <Sub>Time left</Sub>
                 </td>
                 <td>{getSilver(100)}</td>
               </tr>
@@ -263,14 +306,39 @@ export default function PlanetDetailsPane({
           <tbody>
             <tr>
               <td>
-                <Sub>Range {bonus && bonus[StatIdx.Range] && <TimesTwo />}</Sub>
+                <Sub>
+                  <TooltipTrigger name={TooltipName.Range} needsShift>
+                    Range
+                  </TooltipTrigger>{' '}
+                  {bonus && bonus[StatIdx.Range] && <TimesTwo />}
+                </Sub>
               </td>
               <td>{getFormatProp(selected, 'range')}</td>
               <td>
-                <Sub>Min. Pop</Sub>
+                <Sub>
+                  <TooltipTrigger name={TooltipName.MinPop} needsShift>
+                    Min. Pop
+                  </TooltipTrigger>
+                </Sub>
               </td>
               <td>
                 {selected ? formatNumber(selected.populationCap * 0.05) : ''}
+              </td>
+            </tr>
+          </tbody>
+        </DetailsTable>
+        <DetailsTable>
+          <tbody>
+            <tr>
+              <td></td>
+              <td>
+                <Btn
+                  onClick={() => window.open('/planet' + selected?.locationId)}
+                  style={{ marginRight: '0.75em' }}
+                >
+                  View Planet Card
+                </Btn>
+                <Btn onClick={sharePlanet}>Share Planet</Btn>
               </td>
             </tr>
           </tbody>

@@ -14,12 +14,12 @@ export type MousePos = {
 };
 
 export enum WindowManagerEvent {
-  MouseMove = 'MouseMove',
-  MouseDown = 'MouseDown',
-  MouseUp = 'MouseUp',
   StateChanged = 'StateChanged',
-
   MiningCoordsUpdate = 'MiningCoordsUpdate',
+  TooltipUpdated = 'TooltipUpdated',
+
+  ShiftDown = 'ShiftDown',
+  ShiftUp = 'ShiftUp',
 }
 
 export enum CursorState {
@@ -28,6 +28,56 @@ export enum CursorState {
   Targeting,
 }
 
+export enum TooltipName {
+  None,
+  SilverGrowth,
+  SilverCap,
+  Silver,
+  SilverMax,
+  Population,
+  PopulationGrowth,
+  Range,
+  TwitterHandle,
+  Bonus,
+  MinPop,
+  Time50,
+  Time90,
+  PopGrowth,
+  Pirates,
+  Upgrades,
+  PlanetRank,
+  MaxLevel,
+
+  SelectedSilver,
+  SelectedPopulation,
+  Rank,
+  Score,
+  MiningPause,
+  MiningTarget,
+  HashesPerSec,
+  CurrentMining,
+  SilverProd,
+
+  BonusPopCap,
+  BonusPopGro,
+  BonusSilCap,
+  BonusSilGro,
+  BonusRange,
+
+  Clowntown,
+
+  // note that we actually add ModalName to ModalHelp, and that everything after
+  // is not referenced directly. for this reason the relative ordring matters.
+  ModalHelp,
+  ModalPlanetDetails,
+  ModalLeaderboard,
+  ModalPlanetDex,
+  ModalUpgradeDetails,
+  ModalTwitterVerification,
+  ModalTwitterBroadcast,
+}
+
+// the purpose of this class is to manage all ui pane events
 // TODO wire all the mouse events from the game into this guy
 class WindowManager extends EventEmitter {
   static instance: WindowManager;
@@ -37,29 +87,33 @@ class WindowManager extends EventEmitter {
   private lastZIndex: number;
   private cursorState: CursorState;
 
+  private shiftPressed: boolean;
+
+  private tooltipStack: TooltipName[];
+
   private constructor() {
     super();
     this.mousePos = { x: 0, y: 0 };
     this.mousedownPos = null;
     this.lastZIndex = 0;
+    this.tooltipStack = [];
+    this.shiftPressed = false;
 
-    window.addEventListener('mousemove', (e) => {
-      this.mousePos.x = e.clientX;
-      this.mousePos.y = e.clientY;
-      this.emit(WindowManagerEvent.MouseMove, this.mousePos);
+    // this might be slow, consider refactor
+    this.setMaxListeners(40); // however many tooltips there are
+
+    // is it bad that this doesn't get cleaned up?
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Shift') {
+        this.shiftPressed = true;
+        this.emit(WindowManagerEvent.ShiftDown);
+      }
     });
-
-    window.addEventListener('mousedown', (e) => {
-      this.mousedownPos = {
-        x: e.clientX,
-        y: e.clientY,
-      };
-      this.emit(WindowManagerEvent.MouseDown, this.mousedownPos);
-    });
-
-    window.addEventListener('mouseup', (_e) => {
-      this.mousedownPos = null;
-      this.emit(WindowManagerEvent.MouseUp, this.mousePos);
+    window.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift') {
+        this.shiftPressed = false;
+        this.emit(WindowManagerEvent.ShiftUp);
+      }
     });
   }
 
@@ -75,6 +129,22 @@ class WindowManager extends EventEmitter {
     const terminalEmitter = new WindowManager();
 
     return terminalEmitter;
+  }
+
+  // tooltip stuff
+  pushTooltip(tooltip: TooltipName): void {
+    this.tooltipStack.push(tooltip);
+    this.emit(WindowManagerEvent.TooltipUpdated, this.getTooltip());
+  }
+
+  popTooltip(): void {
+    this.tooltipStack.pop();
+    this.emit(WindowManagerEvent.TooltipUpdated, this.getTooltip());
+  }
+
+  getTooltip(): TooltipName {
+    if (this.tooltipStack.length === 0) return TooltipName.None;
+    return this.tooltipStack[this.tooltipStack.length - 1];
   }
 
   // getters

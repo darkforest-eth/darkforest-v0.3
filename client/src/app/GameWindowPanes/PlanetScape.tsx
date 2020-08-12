@@ -1,16 +1,36 @@
 import React, { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 import dfstyles from '../../styles/dfstyles';
-import { Planet, StatIdx } from '../../_types/global/GlobalTypes';
+import {
+  Planet,
+  StatIdx,
+  PlanetLevel,
+  PlanetResource,
+} from '../../_types/global/GlobalTypes';
 import {
   getPlanetColors,
   PixelCoords,
   planetPerlin,
   planetRandom,
+  getPlanetName,
 } from '../../utils/ProcgenUtils';
 import { PlanetColorInfo } from '../../_types/darkforest/app/board/utils/UtilsTypes';
 import _ from 'lodash';
-import { bonusFromHex } from '../../utils/Utils';
+import { bonusFromHex, getPlanetRank } from '../../utils/Utils';
+import { TooltipTrigger } from './Tooltip';
+import { TooltipName } from '../../utils/WindowManager';
+import {
+  SilverIcon,
+  PopulationIcon,
+  PiratesIcon,
+  PopulationGrowthIcon,
+  SilverGrowthIcon,
+  RangeIcon,
+  RankIcon,
+  MaxLevelIcon,
+  SilverProdIcon,
+} from '../Icons';
+import { emptyAddress } from '../../utils/CheckedTypeUtils';
 
 const PlanetScapeContainer = styled.div`
   width: 100%;
@@ -219,8 +239,110 @@ function makeScapeRenderer(
   return getDraw();
 }
 
+const _PlanetIcons = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  padding: 0.1em;
+
+  & > span {
+    width: 1.5em;
+    height: 1.5em;
+    border: 1px solid ${dfstyles.colors.text};
+    background: ${dfstyles.colors.backgroundlighter};
+    border-radius: 2px;
+    margin: 0.1em;
+
+    &,
+    & > span {
+      display: inline-flex !important;
+      flex-direction: row;
+      justify-content: space-around;
+      align-items: center;
+    }
+  }
+`;
+
+const ClownIcon = styled.span`
+  background: red;
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+`;
+
+export function PlanetIcons({ planet }: { planet: Planet | null }) {
+  if (!planet) return <_PlanetIcons />;
+  const bonus = bonusFromHex(planet?.locationId);
+  const rank = getPlanetRank(planet);
+
+  return (
+    <_PlanetIcons>
+      {planet.owner === emptyAddress && planet.population > 0 && (
+        <TooltipTrigger name={TooltipName.Pirates}>
+          <PiratesIcon />
+        </TooltipTrigger>
+      )}
+      {planet.planetLevel === PlanetLevel.MAX && (
+        <TooltipTrigger name={TooltipName.MaxLevel}>
+          <MaxLevelIcon />
+        </TooltipTrigger>
+      )}
+      {planet.planetResource === PlanetResource.SILVER && (
+        <TooltipTrigger name={TooltipName.SilverProd}>
+          <SilverProdIcon />
+        </TooltipTrigger>
+      )}
+      {bonus[StatIdx.PopCap] && (
+        <TooltipTrigger name={TooltipName.BonusPopCap}>
+          <PopulationIcon />
+        </TooltipTrigger>
+      )}
+      {bonus[StatIdx.PopGro] && (
+        <TooltipTrigger name={TooltipName.BonusPopGro}>
+          <PopulationGrowthIcon />
+        </TooltipTrigger>
+      )}
+      {bonus[StatIdx.ResCap] && (
+        <TooltipTrigger name={TooltipName.BonusSilCap}>
+          <SilverIcon />
+        </TooltipTrigger>
+      )}
+      {bonus[StatIdx.ResGro] && (
+        <TooltipTrigger name={TooltipName.BonusSilGro}>
+          <SilverGrowthIcon />
+        </TooltipTrigger>
+      )}
+      {bonus[StatIdx.Range] && (
+        <TooltipTrigger name={TooltipName.BonusRange}>
+          <RangeIcon />
+        </TooltipTrigger>
+      )}
+      {rank > 0 && (
+        <TooltipTrigger name={TooltipName.PlanetRank}>
+          <RankIcon planet={planet} />
+        </TooltipTrigger>
+      )}
+      {getPlanetName(planet) === 'Clown Town' && (
+        <TooltipTrigger name={TooltipName.Clowntown}>
+          <ClownIcon />
+        </TooltipTrigger>
+      )}
+    </_PlanetIcons>
+  );
+}
+
 // NOTE this refreshes every second like everything else; if it's slow we can cache a planet and wait for select
-export function PlanetScape({ planet }: { planet: Planet | null }) {
+export function PlanetScape({
+  planet,
+  keepDrawing, // shitty solution but itll work for now
+}: {
+  planet: Planet | null;
+  keepDrawing?: boolean;
+}) {
   const [color, setColor] = useState<string>('none');
 
   // TODO turn this into const functions; this is very non-reacty
@@ -276,6 +398,7 @@ export function PlanetScape({ planet }: { planet: Planet | null }) {
     let reqId;
     const render = () => {
       if (moonRenderer.current) moonRenderer.current();
+      if (keepDrawing && scapeRenderer.current) scapeRenderer.current();
       reqId = window.requestAnimationFrame(render);
     };
     if (scapeRenderer.current) scapeRenderer.current();
@@ -285,10 +408,11 @@ export function PlanetScape({ planet }: { planet: Planet | null }) {
     return () => {
       window.cancelAnimationFrame(reqId);
     };
-  }, [scapeRenderer, moonRenderer, planet]);
+  }, [scapeRenderer, moonRenderer, planet, keepDrawing]);
 
   return (
     <PlanetScapeContainer ref={parentRef} style={{ background: color }}>
+      {/* hacky but is it what it is */}
       <canvas
         width={width}
         height={height}
@@ -314,6 +438,7 @@ export function PlanetScape({ planet }: { planet: Planet | null }) {
         }}
         ref={scapeRef}
       ></canvas>
+      {!keepDrawing && <PlanetIcons planet={planet} />}
     </PlanetScapeContainer>
   );
 }

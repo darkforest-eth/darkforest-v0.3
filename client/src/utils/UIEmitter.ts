@@ -17,6 +17,9 @@ export enum UIEmitterEvent {
   WorldMouseMove = 'WorldMouseMove',
   WorldMouseUp = 'WorldMouseUp',
   WorldMouseOut = 'WorldMouseOut',
+
+  ZoomIn = 'ZoomIn',
+  ZoomOut = 'ZoomOut',
 }
 
 class UIEmitter extends EventEmitter {

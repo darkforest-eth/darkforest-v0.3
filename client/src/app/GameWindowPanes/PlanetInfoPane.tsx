@@ -15,11 +15,14 @@ import { emptyAddress } from '../../utils/CheckedTypeUtils';
 import GameUIManager from '../board/GameUIManager';
 import GameUIManagerContext from '../board/GameUIManagerContext';
 import { getPlanetName } from '../../utils/ProcgenUtils';
+import { TooltipTrigger } from './Tooltip';
+import { TooltipName } from '../../utils/WindowManager';
 
 const DataRow = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   & > div:last-child {
     margin-left: 1.5em;
   }
@@ -41,7 +44,7 @@ const PlanetInfoWrapper = styled.div`
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  width: 20em;
+  width: 22em;
   overflow-y: hidden;
 `;
 
@@ -64,18 +67,19 @@ export default function PlanetInfoPane({
   }, [uiManager]);
 
   const planetName = (): string => {
-    if (!uiManager) return 'No planet selected.';
-    if (!selected) return 'No planet selected.';
+    if (!uiManager || !selected) return 'No planet selected.';
+
     const planetname = getPlanetName(selected);
     const shorthash = getPlanetShortHash(selected);
     const shortaddress = getPlayerShortHash(selected.owner);
 
-    if (selected.owner === emptyAddress) return `Unclaimed ${shorthash}`;
+    if (selected.owner === emptyAddress)
+      return `Unclaimed ${shorthash} ${planetname}`;
     if (selected.owner === account) return `${shorthash} ${planetname}`;
 
     const twitter = uiManager.getTwitter(selected.owner);
-    if (!twitter) return `${shortaddress}'s ${shorthash}`;
-    else return `@${twitter}'s ${shorthash}`;
+    if (!twitter) return `${shortaddress}'s ${shorthash} ${planetname}`;
+    else return `@${twitter}'s ${shorthash} ${planetname}`;
   };
 
   return (
@@ -91,18 +95,26 @@ export default function PlanetInfoPane({
 
         <DataRow>
           <Data>
-            <PopulationIcon />
-            <span>
-              {getFormatProp(selected, 'population')} <Sub>/</Sub>{' '}
-              {getFormatProp(selected, 'populationCap')}
-            </span>
+            <TooltipTrigger name={TooltipName.Population} display='inline-flex'>
+              <PopulationIcon />
+            </TooltipTrigger>
+            <TooltipTrigger name={TooltipName.SelectedPopulation}>
+              <span>
+                {getFormatProp(selected, 'population')} <Sub>/</Sub>{' '}
+                {getFormatProp(selected, 'populationCap')}
+              </span>
+            </TooltipTrigger>
           </Data>
           <Data>
-            <SilverIcon />
-            <span>
-              {getFormatProp(selected, 'silver')} <Sub>/</Sub>{' '}
-              {getFormatProp(selected, 'silverMax')}
-            </span>
+            <TooltipTrigger name={TooltipName.Silver} display='inline-flex'>
+              <SilverIcon />
+            </TooltipTrigger>
+            <TooltipTrigger name={TooltipName.SelectedSilver}>
+              <span>
+                {getFormatProp(selected, 'silver')} <Sub>/</Sub>{' '}
+                {getFormatProp(selected, 'silverMax')}
+              </span>
+            </TooltipTrigger>
           </Data>
         </DataRow>
       </PlanetInfoWrapper>

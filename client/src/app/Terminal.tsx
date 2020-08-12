@@ -74,6 +74,47 @@ export const shellProps = defaultTypistProps;
 
 const ENTER_KEY_CODE = 13;
 
+type FragmentHook = [number, (fn: (x: number) => number) => void];
+function TerminalFragment({
+  fragment,
+  fragmentHook,
+  skipAllTyping,
+  idx,
+  onCharTyped,
+}: {
+  fragment: FragmentData;
+  fragmentHook: FragmentHook;
+  skipAllTyping: boolean;
+  idx: number;
+  onCharTyped: () => void;
+}) {
+  const [fragmentNo, setFragmentNo] = fragmentHook;
+
+  if (idx < fragmentNo) {
+    return <span>{fragment.fragment}</span>;
+  }
+  if (idx === fragmentNo) {
+    if (!fragment.skipTyping && !skipAllTyping) {
+      return (
+        <Typist
+          onCharacterTyped={onCharTyped}
+          onTypingDone={() => {
+            setFragmentNo((x) => x + 1);
+          }}
+          {...fragment.typistProps}
+        >
+          {fragment.fragment}
+        </Typist>
+      );
+    } else {
+      setFragmentNo((x) => x + 1);
+      return <span></span>;
+    }
+  }
+
+  return <span></span>;
+}
+
 export default function Terminal() {
   const ref = useRef(document.createElement('div'));
   const inputRef = useRef(document.createElement('input'));
@@ -82,12 +123,10 @@ export default function Terminal() {
   const [isTyping, setIsTyping] = useState<boolean>(true);
   const [userInputEnabled, setUserInputEnabled] = useState<boolean>(false);
   const [inputText, setInputText] = useState<string>('');
-  const [fragmentNo, setFragmentNo] = useState<number>(0);
+  const fragmentHook = useState<number>(0);
+  const [fragmentNo, _setFragmentNo] = fragmentHook;
 
-  const scrollToEnd = () => {
-    const el = ref.current;
-    el.scrollTo(0, el.scrollHeight);
-  };
+  const [skipAllTyping, setSkipAllTyping] = useState<boolean>(false);
 
   const newline = () => {
     setFragments((lines) =>
@@ -205,6 +244,9 @@ export default function Terminal() {
       })
       .on(TerminalEvent.DisableUserInput, () => {
         setUserInputEnabled(false);
+      })
+      .on(TerminalEvent.SkipAllTyping, () => {
+        setSkipAllTyping(true);
       });
   }, []);
 
@@ -214,6 +256,11 @@ export default function Terminal() {
     }
   }, [userInputEnabled]);
 
+  const scrollToEnd = () => {
+    const el = ref.current;
+    el.scrollTo(0, el.scrollHeight);
+  };
+
   useEffect(() => {
     setIsTyping(fragmentNo < fragments.length);
     scrollToEnd();
@@ -221,30 +268,21 @@ export default function Terminal() {
 
   return (
     <TerminalContainer ref={ref}>
-      {fragments.map((fragment, idx) => {
-        if (idx < fragmentNo) {
-          return fragment.fragment;
-        }
-        if (idx === fragmentNo) {
-          if (!fragment.skipTyping) {
-            return (
-              <Typist
-                key={idx}
-                onCharacterTyped={scrollToEnd}
-                onTypingDone={() => {
-                  setFragmentNo((x) => x + 1);
-                }}
-                {...fragment.typistProps}
-              >
-                {fragment.fragment}
-              </Typist>
-            );
-          } else {
-            setFragmentNo((x) => x + 1);
-          }
-        }
-        return null;
-      })}
+      {fragments.map(
+        // this allows us to print only the last 200 messages without react yelling at us
+        (fragment, idx) =>
+          idx > fragments.length - 200 && (
+            <span key={idx}>
+              <TerminalFragment
+                fragment={fragment}
+                fragmentHook={fragmentHook}
+                skipAllTyping={skipAllTyping}
+                idx={idx}
+                onCharTyped={scrollToEnd}
+              />
+            </span>
+          )
+      )}
 
       {/* User input prompt */}
 

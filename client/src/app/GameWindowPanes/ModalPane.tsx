@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import styled from 'styled-components';
 import dfstyles from '../../styles/dfstyles';
-import WindowManager from '../../utils/WindowManager';
+import WindowManager, { TooltipName } from '../../utils/WindowManager';
 import { PaneProps } from '../GameWindowComponents';
 import { GameWindowZIndex } from '../GameWindow';
 import {
@@ -13,6 +13,7 @@ import {
   TwitterIcon,
   BroadcastIcon,
 } from '../Icons';
+import { TooltipTrigger } from './Tooltip';
 
 export const IconButton = styled.div`
   width: 1.5em;
@@ -75,12 +76,19 @@ export function ModalIcon({
   };
 
   return (
-    <IconButton
-      onClick={() => setActive((b) => !b)}
-      className={active ? 'active' : undefined}
+    <TooltipTrigger
+      name={TooltipName.ModalHelp + modal}
+      needsShift={true}
+      display='inline-block'
+      style={{ height: '1.5em' }}
     >
-      {child()}
-    </IconButton>
+      <IconButton
+        onClick={() => setActive((b) => !b)}
+        className={active ? 'active' : undefined}
+      >
+        {child()}
+      </IconButton>
+    </TooltipTrigger>
   );
 }
 

@@ -15,7 +15,6 @@ import autoBind from 'auto-bind';
 import { EventEmitter } from 'events';
 import AbstractUIManager from './AbstractUIManager';
 import AbstractGameManager from '../../api/AbstractGameManager';
-import perlin from '../../miner/perlin';
 import { moveShipsDecay } from '../../utils/Utils';
 import {
   UnconfirmedMove,
@@ -172,6 +171,7 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
         } else {
           this.setSelectedPlanet(mouseUpOverPlanet);
           this.selectedCoords = mouseUpOverCoords;
+          /*
           console.log(this.selectedPlanet);
           console.log(
             perlin({
@@ -179,6 +179,7 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
               y: this.selectedCoords.y,
             })
           );
+          */
         }
       } else if (
         !this.replayMode &&
@@ -193,9 +194,8 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
         for (const unconfirmedMove of from.unconfirmedDepartures) {
           effectivePopulation -= unconfirmedMove.forces;
         }
-        let forces = Math.floor(
-          (effectivePopulation * this.getForcesSending(from.locationId)) / 100
-        );
+        const effPercent = Math.min(this.getForcesSending(from.locationId), 98);
+        let forces = Math.floor((effectivePopulation * effPercent) / 100);
 
         // make it so you leave one force behind
         if (forces >= from.population) {
@@ -212,14 +212,16 @@ class GameUIManager extends EventEmitter implements AbstractUIManager {
           this.mouseDownOverPlanet,
           dist
         );
+        const effPercentSilver = Math.min(
+          this.getSilverSending(from.locationId),
+          98
+        );
         if (myAtk > 0) {
           this.gameManager.move(
             from,
             to,
             forces,
-            Math.floor(
-              (from.silver * this.getSilverSending(from.locationId)) / 100
-            )
+            Math.floor((from.silver * effPercentSilver) / 100)
           );
         }
       }

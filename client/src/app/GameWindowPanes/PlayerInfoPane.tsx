@@ -6,9 +6,11 @@ import GameUIManager from '../board/GameUIManager';
 import GameUIManagerContext from '../board/GameUIManagerContext';
 import { EthAddress } from '../../_types/global/GlobalTypes';
 import { formatNumber } from '../../utils/Utils';
-import { ModalIcon, ModalName, ModalHook } from './ModalPane';
+import { ModalHook } from './ModalPane';
+import { TooltipTrigger } from './Tooltip';
+import { TooltipName } from '../../utils/WindowManager';
 
-const PlayerInfoWrapper = styled.table`
+const PlayerInfoWrapper = styled.div`
   width: 100%;
   & > div {
     display: flex;
@@ -26,12 +28,6 @@ const PlayerInfoWrapper = styled.table`
     }
   }
 
-  & span.twitter-button-wrap {
-    & > div {
-      margin-right: 0.5em;
-    }
-  }
-
   & span.twitter-connect {
     color: ${dfstyles.colors.subtext};
     &: hover {
@@ -44,9 +40,13 @@ const PlayerInfoWrapper = styled.table`
 export default function PlayerInfoPane({
   _updater,
   hook: twitterHook,
+  score,
+  rank,
 }: {
   _updater: number;
   hook: ModalHook;
+  score: number;
+  rank: number;
 }) {
   const uiManager = useContext<GameUIManager | null>(GameUIManagerContext);
   const [account, setAccount] = useState<EthAddress | null>(null);
@@ -63,7 +63,9 @@ export default function PlayerInfoPane({
     <SidebarPane title='Player Info' headerItems={<></>}>
       <PlayerInfoWrapper>
         <div>
-          <span>Population</span>
+          <TooltipTrigger name={TooltipName.Population} needsShift>
+            <span>Population</span>
+          </TooltipTrigger>
           <span>
             {account && uiManager
               ? formatNumber(uiManager.getPopOfPlayer(account))
@@ -71,7 +73,9 @@ export default function PlayerInfoPane({
           </span>
         </div>
         <div>
-          <span>Silver</span>
+          <TooltipTrigger name={TooltipName.Silver} needsShift>
+            <span>Silver</span>
+          </TooltipTrigger>
           <span>
             {account && uiManager
               ? formatNumber(uiManager.getSilverOfPlayer(account))
@@ -79,13 +83,9 @@ export default function PlayerInfoPane({
           </span>
         </div>
         <div>
-          <span className='twitter-button-wrap'>
-            <ModalIcon
-              hook={twitterHook}
-              modal={ModalName.TwitterVerification}
-            />{' '}
-            Handle
-          </span>
+          <TooltipTrigger name={TooltipName.TwitterHandle} needsShift>
+            <span>Handle</span>
+          </TooltipTrigger>
           <span>
             {twitter ? (
               <span>@{twitter}</span>
@@ -94,10 +94,22 @@ export default function PlayerInfoPane({
                 onClick={() => twitterHook[1]((b) => !b)}
                 className='twitter-connect'
               >
-                Connect
+                Connect Twitter
               </span>
             )}
           </span>
+        </div>
+        <div>
+          <TooltipTrigger name={TooltipName.Score} needsShift>
+            <span>Score</span>
+          </TooltipTrigger>
+          <span>{Math.floor(score)}</span>
+        </div>
+        <div>
+          <TooltipTrigger name={TooltipName.Rank} needsShift>
+            <span>Rank</span>
+          </TooltipTrigger>
+          <span>{rank}</span>
         </div>
       </PlayerInfoWrapper>
     </SidebarPane>

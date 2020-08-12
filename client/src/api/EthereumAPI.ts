@@ -273,6 +273,10 @@ class EthereumAPI extends EventEmitter {
       TerminalTextStyle.Sub,
       true
     );
+    terminalEmitter.println(
+      'Open Metamask to confirm the transaction.',
+      TerminalTextStyle.White
+    );
     terminalEmitter.newline();
 
     const overrides: providers.TransactionRequest = {
@@ -530,23 +534,25 @@ class EthereumAPI extends EventEmitter {
 
   async getPlanets(): Promise<PlanetMap> {
     const contract = this.contract;
+    const terminalEmitter = TerminalEmitter.getInstance();
+    terminalEmitter.println('Getting planet data...');
     const nPlanets: number = await contract.getNPlanets();
 
     const planetIds = await aggregateBulkGetter<BigInteger>(
       nPlanets,
-      20,
+      60,
       async (start, end) => await contract.bulkGetPlanetIds(start, end)
     );
     const rawPlanets = await aggregateBulkGetter<RawPlanetData>(
       nPlanets,
-      20,
+      60,
       async (start, end) => await contract.bulkGetPlanets(start, end)
     );
     const rawPlanetsExtendedInfo = await aggregateBulkGetter<
       RawPlanetExtendedInfo
     >(
       nPlanets,
-      20,
+      60,
       async (start, end) =>
         await contract.bulkGetPlanetsExtendedInfo(start, end)
     );

@@ -6,7 +6,7 @@ import GameUIManagerContext from '../board/GameUIManagerContext';
 import { Planet, PlanetResource } from '../../_types/global/GlobalTypes';
 import UIEmitter, { UIEmitterEvent } from '../../utils/UIEmitter';
 import { SidebarPane } from '../GameWindowComponents';
-import { Sub } from '../../components/Text';
+import { Sub, Space } from '../../components/Text';
 import { getPlanetShortHash, formatNumber } from '../../utils/Utils';
 import dfstyles from '../../styles/dfstyles';
 import { getPlanetName, getPlanetColors } from '../../utils/ProcgenUtils';
@@ -17,9 +17,17 @@ const DexWrapperSmall = styled.div`
   overflow-y: scroll;
 
   & > span > div {
+    // rows
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
+
+    & > span:last-child {
+      width: 2.5em;
+      height: 30px;
+    }
+
     &.selected {
       & > span:first-child {
         text-decoration: underline;
@@ -42,13 +50,17 @@ function DexSmallRow({
   planet: Planet;
   className: string;
 }) {
+  const getFormatName = (planet: Planet): string => {
+    const myName = getPlanetName(planet);
+    if (myName.length >= 20) return myName.substring(0, 17) + '...';
+    else return myName;
+  };
   return (
     <PlanetLink planet={planet}>
       <div className={className}>
-        <Sub>{getPlanetShortHash(planet)}</Sub>
+        <Sub>{getFormatName(planet)}</Sub>
         <span>
-          <Sub>lv </Sub>
-          {planet.planetLevel}
+          <PlanetThumb planet={planet} />
         </span>
       </div>
     </PlanetLink>
@@ -81,34 +93,60 @@ const DexRow = styled.div`
       position: relative; // for planetcircle
     }
     &:nth-child(2) {
-      flex-grow: 1;
+      // short hash
+      margin-right: 0.5em;
     }
     &:nth-child(3) {
+      flex-grow: 1;
+    }
+    &:nth-child(4) {
       // planet level
       margin-right: 1em;
-      width: 2em;
+      width: 3em;
     }
-    // coords
-    &:nth-child(4) {
-      text-align: left;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      width: 4em;
-    }
+    // pop, silver
     &:nth-child(5) {
-      text-align: right;
-      width: 4em;
+      width: 4.5em;
+    }
+    &:nth-child(6) {
+      width: 4.5em;
     }
     // score
-    &:nth-child(6) {
-      text-align: right;
+    &:nth-child(7) {
       width: 7em;
     }
   }
-  &:hover {
+
+  &.title-row > span {
+    color: ${dfstyles.colors.subtext};
+
+    &.selected {
+      text-decoration: underline;
+      color: ${dfstyles.colors.text};
+    }
+
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    &.selected {
+      text-decoration: underline;
+    }
+
+    &:nth-child(1),
+    &:nth-child(2) {
+      text-decoration: none;
+      pointer-events: none;
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+
+  &:hover:not(.title-row) {
     cursor: pointer;
-    & > span:nth-child(2) span:last-child {
+    & > span:nth-child(3) {
       text-decoration: underline;
     }
   }
@@ -120,7 +158,7 @@ const DexRow = styled.div`
     }
   }
 `;
-const _PlanetCircle = styled.div`
+const _PlanetThumb = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
@@ -137,7 +175,7 @@ const _PlanetCircle = styled.div`
   }
 `;
 
-function PlanetCircle({ planet }: { planet: Planet }) {
+export function PlanetThumb({ planet }: { planet: Planet }) {
   const radius = 5 + 3 * planet.planetLevel;
   // const radius = 5 + 3 * PlanetLevel.MAX;
   const { baseColor, backgroundColor } = getPlanetColors(planet);
@@ -146,7 +184,7 @@ function PlanetCircle({ planet }: { planet: Planet }) {
   const ringH = Math.max(2, ringW / 7);
 
   return (
-    <_PlanetCircle>
+    <_PlanetThumb>
       <span>
         <span
           style={{
@@ -170,7 +208,7 @@ function PlanetCircle({ planet }: { planet: Planet }) {
           }}
         ></span>
       </span>
-    </_PlanetCircle>
+    </_PlanetThumb>
   );
 }
 
@@ -189,39 +227,23 @@ function DexEntry({
   className: string;
   score: number;
 }) {
-  const uiManager = useContext<GameUIManager | null>(GameUIManagerContext);
-  const loc = uiManager?.getLocationOfPlanet(planet.locationId);
-
-  let x, y;
-  if (loc) {
-    x = loc.coords.x;
-    y = loc.coords.y;
-  } else x = y = 0;
-
   return (
     <PlanetLink planet={planet}>
       <DexRow className={className}>
         <span>
-          <PlanetCircle planet={planet} />
+          <PlanetThumb planet={planet} />
         </span>
         <span>
-          <Sub>{getPlanetShortHash(planet)}</Sub>{' '}
+          <Sub>{getPlanetShortHash(planet)}</Sub>
+        </span>
+        <span>
           <span>{getPlanetName(planet)}</span>
         </span>
         <span>
           <Sub>lv</Sub> {planet.planetLevel}
         </span>
-        <span>
-          <span>
-            <Sub>(</Sub>
-            {x}
-          </span>
-          <Sub>,</Sub>
-        </span>
-        <span>
-          {y}
-          <Sub>)</Sub>
-        </span>
+        <span>{formatNumber(planet.population)}</span>
+        <span>{formatNumber(planet.silver)}</span>
         <span>
           {formatNumber(score)}
           <Sub> pts</Sub>
@@ -231,7 +253,7 @@ function DexEntry({
   );
 }
 
-function PlanetLink({
+export function PlanetLink({
   planet,
   children,
 }: {
@@ -252,6 +274,15 @@ function PlanetLink({
     </span>
   );
 }
+
+enum Columns {
+  Name = 0,
+  Level = 1,
+  Pop = 2,
+  Silver = 3,
+  Points = 4,
+}
+
 export default function PlanetDexPane({
   hook,
   small,
@@ -266,9 +297,34 @@ export default function PlanetDexPane({
   const [visible, _setVisible] = hook;
   const uiManager = useContext<GameUIManager | null>(GameUIManagerContext);
 
+  const [sortBy, setSortBy] = useState<Columns>(Columns.Points);
+
+  const scoreFn = (a: [Planet, number], b: [Planet, number]): number => {
+    const [scoreA, scoreB] = [getPlanetScore(...a), getPlanetScore(...b)];
+    return scoreB - scoreA;
+  };
+
+  const nameFn = (a: [Planet, number], b: [Planet, number]): number => {
+    const [nameA, nameB] = [getPlanetName(a[0]), getPlanetName(b[0])];
+    return nameA.localeCompare(nameB);
+  };
+
+  const popFn = (a: [Planet, number], b: [Planet, number]): number => {
+    return b[0].population - a[0].population;
+  };
+
+  const silverFn = (a: [Planet, number], b: [Planet, number]): number => {
+    return b[0].silver - a[0].silver;
+  };
+
+  const levelFn = (a: [Planet, number], b: [Planet, number]): number => {
+    return b[0].planetLevel - a[0].planetLevel;
+  };
+
   const sortingFn = (a: [Planet, number], b: [Planet, number]): number => {
     const [scoreA, scoreB] = [getPlanetScore(...a), getPlanetScore(...b)];
-    if (scoreA !== scoreB) return scoreB - scoreA;
+    const myFn = [nameFn, levelFn, popFn, silverFn, scoreFn][sortBy];
+    if (scoreA !== scoreB) return myFn(a, b);
 
     if (!uiManager) return 0;
     const locA = uiManager.getLocationOfPlanet(a[0].locationId);
@@ -328,6 +384,43 @@ export default function PlanetDexPane({
   return (
     <ModalPane hook={hook} title='Planet Dex' name={ModalName.PlanetDex}>
       <DexWrapper>
+        <DexRow className='title-row'>
+          <span></span> {/* empty icon cell */}
+          <span>
+            <Space length={5} />
+          </span>{' '}
+          {/* empty icon cell */}
+          <span
+            className={sortBy === Columns.Name ? 'selected' : ''}
+            onClick={() => setSortBy(Columns.Name)}
+          >
+            Planet Name
+          </span>
+          <span
+            className={sortBy === Columns.Level ? 'selected' : ''}
+            onClick={() => setSortBy(Columns.Level)}
+          >
+            Level
+          </span>
+          <span
+            className={sortBy === Columns.Pop ? 'selected' : ''}
+            onClick={() => setSortBy(Columns.Pop)}
+          >
+            Pop.
+          </span>
+          <span
+            className={sortBy === Columns.Silver ? 'selected' : ''}
+            onClick={() => setSortBy(Columns.Silver)}
+          >
+            Silver
+          </span>
+          <span
+            className={sortBy === Columns.Points ? 'selected' : ''}
+            onClick={() => setSortBy(Columns.Points)}
+          >
+            Points
+          </span>
+        </DexRow>
         {planets
           .sort((a, b) => b.populationCap - a.populationCap)
           .map((planet, i) => [planet, i]) // pass the index

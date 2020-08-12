@@ -65,7 +65,11 @@ export default function TwitterVerifyPane({ hook }: { hook: ModalHook }) {
     if (uiManager) {
       const tweetText = await uiManager.generateVerificationTweet(twitterInput);
       const str = `I'm verifying my Dark Forest account on @darkforest_eth (https://zkga.me): ${tweetText}`;
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURI(str)}`);
+      window.open(
+        `https://twitter.com/intent/tweet?hashtags=darkforest&text=${encodeURI(
+          str
+        )}`
+      );
       setTweeted(true);
     }
   };
@@ -93,7 +97,9 @@ export default function TwitterVerifyPane({ hook }: { hook: ModalHook }) {
     >
       <TwitterWrapper>
         <div className='row'>
-          <p>Connect to Twitter by signing a public tweet.</p>
+          <p onClick={onTweetClick}>
+            Connect to Twitter by signing a public tweet.
+          </p>
         </div>
         {twitter && (
           <p>

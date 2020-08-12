@@ -62,7 +62,7 @@ const links = {
   email: 'mailto:contact@zkga.me',
   blog: 'https://blog.zkga.me/',
   telegram: 'https://t.me/zk_forest',
-  github: 'https://github.com/briangu33/darkforest/',
+  github: 'https://github.com/darkforest-eth',
 };
 
 // note: prefer styled-components when possible because semantically easier to debug
@@ -161,7 +161,7 @@ const CTA = styled.div`
   }
 `;
 
-const Title = styled.h1`
+const Title = styled.div`
   font-size: ${dfstyles.fontH1};
   font-family: ${dfstyles.titleFont};
   @media (max-width: ${dfstyles.screenSizeS}) {
@@ -305,9 +305,9 @@ export default function LandingPage() {
             <a className={'link-telegram'} href={links.telegram}>
               <span className={'icon-telegram'}></span>
             </a>
-            {/* <a className={'link-github'} href={'#'}>
+            <a className={'link-github'} href={links.github}>
               <span className={'icon-github'}></span>
-            </a> */}
+            </a>
           </IconLinks>
         </Footer>
       </div>

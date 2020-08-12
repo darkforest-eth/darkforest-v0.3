@@ -7,6 +7,7 @@ import {
   Bonus,
   PlanetClass,
   EthAddress,
+  UpgradeState,
 } from '../_types/global/GlobalTypes';
 import { address, emptyAddress } from './CheckedTypeUtils';
 import _ from 'lodash';
@@ -114,6 +115,8 @@ export const getOwnerColor: (planet: Planet) => string = (planet) => {
 };
 
 export const formatNumber = (num: number): string => {
+  if (num < 100) return `${num.toFixed(2)}`;
+
   const suffixes = ['', 'K', 'M', 'B', 'T', 'q', 'Q'];
   let log000 = 0;
   let rem = num;
@@ -132,6 +135,7 @@ export const seededRandom = (s: number) => {
 
 export const getFormatProp = (planet: Planet | null, prop: string): string => {
   if (!planet) return '0';
+  if (prop === 'silverGrowth') return formatNumber(planet[prop] * 60);
   else return formatNumber(planet[prop]);
 };
 
@@ -163,6 +167,20 @@ export const getPlanetShortHash = (planet: Planet | null): string => {
 
 export const getPlayerShortHash = (address: EthAddress): string => {
   return address.substring(0, 6);
+};
+
+const compStates = (a: UpgradeState, b: UpgradeState): boolean => {
+  return a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
+};
+
+export const isFullRank = (planet: Planet | null): boolean => {
+  if (!planet) return true;
+  else
+    return (
+      compStates(planet.upgradeState, [2, 2, 4]) ||
+      compStates(planet.upgradeState, [2, 4, 2]) ||
+      compStates(planet.upgradeState, [4, 2, 2])
+    );
 };
 
 //https://stackoverflow.com/questions/32589197/how-can-i-capitalize-the-first-letter-of-each-word-in-a-string-using-javascript/45620677#45620677

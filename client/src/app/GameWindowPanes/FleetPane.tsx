@@ -129,7 +129,8 @@ export default function FleetPane({ selected }: { selected: Planet | null }) {
   const getSendingPop = () => {
     if (!selected) return 0;
     const base = selected.population * (popPercent / 100);
-    if (selected.population - base < 1) return selected.population - 1;
+    if (selected.population - base < 1)
+      return Math.max(selected.population - 1, 0);
     else return base;
   };
 

@@ -34,6 +34,7 @@ class Viewport {
     canvas: HTMLCanvasElement
   ) {
     this.gameUIManager = gameUIManager;
+    this.gameUIManager.setDetailLevel(this.getDetailLevel());
 
     // each of these is measured relative to the world coordinate system
     this.centerWorldCoords = centerWorldCoords;
@@ -66,31 +67,16 @@ class Viewport {
     const viewport = Viewport.instance;
 
     if (viewport) {
-      uiEmitter.removeListener(
-        UIEmitterEvent.CanvasMouseDown,
-        viewport.onMouseDown
-      );
-      uiEmitter.removeListener(
-        UIEmitterEvent.CanvasMouseMove,
-        viewport.onMouseMove
-      );
-      uiEmitter.removeListener(
-        UIEmitterEvent.CanvasMouseUp,
-        viewport.onMouseUp
-      );
-      uiEmitter.removeListener(
-        UIEmitterEvent.CanvasMouseOut,
-        viewport.onMouseOut
-      );
-      uiEmitter.removeListener(UIEmitterEvent.CanvasScroll, viewport.onScroll);
-      uiEmitter.removeListener(
-        UIEmitterEvent.WindowResize,
-        viewport.onWindowResize
-      );
-      uiEmitter.removeListener(
-        UIEmitterEvent.CenterPlanet,
-        viewport.centerPlanet
-      );
+      uiEmitter
+        .removeListener(UIEmitterEvent.CanvasMouseDown, viewport.onMouseDown)
+        .removeListener(UIEmitterEvent.CanvasMouseMove, viewport.onMouseMove)
+        .removeListener(UIEmitterEvent.CanvasMouseUp, viewport.onMouseUp)
+        .removeListener(UIEmitterEvent.CanvasMouseOut, viewport.onMouseOut)
+        .removeListener(UIEmitterEvent.CanvasScroll, viewport.onScroll)
+        .removeListener(UIEmitterEvent.WindowResize, viewport.onWindowResize)
+        .removeListener(UIEmitterEvent.CenterPlanet, viewport.centerPlanet)
+        .removeListener(UIEmitterEvent.ZoomIn, viewport.zoomIn)
+        .removeListener(UIEmitterEvent.ZoomOut, viewport.zoomOut);
     }
     Viewport.instance = null;
   }
@@ -98,8 +84,6 @@ class Viewport {
   static initialize(
     gameUIManager: AbstractUIManager,
     widthInWorldUnits: number,
-    viewportWidth: number,
-    viewportHeight: number,
     canvas: HTMLCanvasElement
   ): Viewport {
     const uiEmitter = UIEmitter.getInstance();
@@ -110,18 +94,21 @@ class Viewport {
       gameUIManager,
       homeCoords,
       widthInWorldUnits,
-      viewportWidth,
-      viewportHeight,
+      canvas.width,
+      canvas.height,
       canvas
     );
 
-    uiEmitter.on(UIEmitterEvent.CanvasMouseDown, viewport.onMouseDown);
-    uiEmitter.on(UIEmitterEvent.CanvasMouseMove, viewport.onMouseMove);
-    uiEmitter.on(UIEmitterEvent.CanvasMouseUp, viewport.onMouseUp);
-    uiEmitter.on(UIEmitterEvent.CanvasMouseOut, viewport.onMouseOut);
-    uiEmitter.on(UIEmitterEvent.CanvasScroll, viewport.onScroll);
-    uiEmitter.on(UIEmitterEvent.WindowResize, viewport.onWindowResize);
-    uiEmitter.on(UIEmitterEvent.CenterPlanet, viewport.centerPlanet);
+    uiEmitter
+      .on(UIEmitterEvent.CanvasMouseDown, viewport.onMouseDown)
+      .on(UIEmitterEvent.CanvasMouseMove, viewport.onMouseMove)
+      .on(UIEmitterEvent.CanvasMouseUp, viewport.onMouseUp)
+      .on(UIEmitterEvent.CanvasMouseOut, viewport.onMouseOut)
+      .on(UIEmitterEvent.CanvasScroll, viewport.onScroll)
+      .on(UIEmitterEvent.WindowResize, viewport.onWindowResize)
+      .on(UIEmitterEvent.CenterPlanet, viewport.centerPlanet)
+      .on(UIEmitterEvent.ZoomIn, viewport.zoomIn)
+      .on(UIEmitterEvent.ZoomOut, viewport.zoomOut);
 
     Viewport.instance = viewport;
 
@@ -129,13 +116,19 @@ class Viewport {
   }
 
   centerPlanet(planet: Planet | null): void {
-    console.log(this.viewportWidth, this.viewportHeight);
-
     if (!planet) return;
     const loc = this.gameUIManager.getLocationOfPlanet(planet.locationId);
     if (!loc) return;
     const { x, y } = loc.coords;
     this.centerWorldCoords = { x, y };
+  }
+
+  zoomIn(): void {
+    this.onScroll(-300, true);
+  }
+
+  zoomOut(): void {
+    this.onScroll(300, true);
   }
 
   // Event handlers
@@ -184,14 +177,17 @@ class Viewport {
     this.mouseLastCoords = null;
   }
 
-  onScroll(deltaY: number) {
-    if (this.mouseLastCoords !== null) {
-      const mouseWorldCoords = this.canvasToWorldCoords(this.mouseLastCoords);
+  onScroll(deltaY: number, forceZoom = false) {
+    if (this.mouseLastCoords !== null || forceZoom) {
+      let mouseWorldCoords = this.centerWorldCoords;
+      if (this.mouseLastCoords) {
+        mouseWorldCoords = this.canvasToWorldCoords(this.mouseLastCoords);
+      }
       const centersDiff = {
         x: this.centerWorldCoords.x - mouseWorldCoords.x,
         y: this.centerWorldCoords.y - mouseWorldCoords.y,
       };
-      const base = this.isFirefox ? 1.005 : 1.0001;
+      const base = this.isFirefox ? 1.005 : 1.0006;
       const newCentersDiff = {
         x: centersDiff.x * base ** deltaY,
         y: centersDiff.y * base ** deltaY,
@@ -311,6 +307,9 @@ class Viewport {
   }
 
   private getDetailLevel(): number {
+    if (this.widthInWorldUnits > 65536) {
+      return 5;
+    }
     if (this.widthInWorldUnits > 32768) {
       return 4;
     }
@@ -323,7 +322,16 @@ class Viewport {
     if (this.widthInWorldUnits > 4096) {
       return 1;
     }
-    return 0;
+    if (this.widthInWorldUnits > 2048) {
+      return 0;
+    }
+    if (this.widthInWorldUnits > 1024) {
+      return -1;
+    }
+    if (this.widthInWorldUnits > 512) {
+      return -2;
+    }
+    return -3;
   }
 }
 

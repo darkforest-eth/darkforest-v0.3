@@ -21,6 +21,7 @@ export enum TerminalEvent {
   EnableUserInput = 'EnableUserInput',
   DisableUserInput = 'DisableUserInput',
   UserEnteredInput = 'UserEnteredInput',
+  SkipAllTyping = 'SkipAllTyping',
 }
 
 class TerminalEmitter extends EventEmitter {
