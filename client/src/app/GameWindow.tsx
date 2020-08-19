@@ -30,6 +30,7 @@ import PlanetDexPane from './GameWindowPanes/PlanetDexPane';
 import UpgradeDetailsPane from './GameWindowPanes/UpgradeDetailsPane';
 import TwitterVerifyPane from './GameWindowPanes/TwitterVerifyPane';
 import TwitterBroadcastPane from './TwitterBroadcastPane';
+import MapSharePane from './GameWindowPanes/MapSharePane';
 import ZoomPane from './GameWindowPanes/ZoomPane';
 import Tooltip from './GameWindowPanes/Tooltip';
 import {
@@ -92,6 +93,7 @@ export default function GameWindow() {
   const upgradeDetHook = useState<boolean>(false);
   const twitterVerifyHook = useState<boolean>(false);
   const twitterBroadcastHook = useState<boolean>(false);
+  const mapShareHook = useState<boolean>(false);
 
   const [score, setScore] = useState<number>(0);
   const [rank, setRank] = useState<number>(0);
@@ -222,6 +224,7 @@ export default function GameWindow() {
         <UpgradeDetailsPane hook={upgradeDetHook} selected={selected} />
         <TwitterVerifyPane hook={twitterVerifyHook} />
         <TwitterBroadcastPane hook={twitterBroadcastHook} selected={selected} />
+        <MapSharePane hook={mapShareHook} />
       </ModalWrapper>
 
       <MainWindow>
@@ -251,6 +254,7 @@ export default function GameWindow() {
             <ModalIcon hook={leaderboardHook} modal={ModalName.Leaderboard} />
             <ModalIcon hook={planetdexHook} modal={ModalName.PlanetDex} />
             <ModalIcon hook={upgradeDetHook} modal={ModalName.UpgradeDetails} />
+            <ModalIcon hook={mapShareHook} modal={ModalName.MapShare} />
             <ModalIcon
               hook={twitterVerifyHook}
               modal={ModalName.TwitterVerification}

@@ -690,6 +690,14 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     this.ethereumAPI.upgradePlanet(upgradeArgs);
     return this;
   }
+
+  addNewChunk(chunk: ExploredChunkData): GameManager {
+    this.localStorageManager.updateChunk(chunk, false);
+    for (const planetLocation of chunk.planetLocations) {
+      this.planetHelper.addPlanetLocation(planetLocation);
+    }
+    return this;
+  }
 }
 
 export default GameManager;

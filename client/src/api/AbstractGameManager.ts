@@ -67,4 +67,5 @@ export default interface AbstractGameManager extends EventEmitter {
     silver: number
   ): AbstractGameManager;
   upgrade(planet: Planet, branch: number): AbstractGameManager;
+  addNewChunk(chunk: ExploredChunkData): AbstractGameManager;
 }

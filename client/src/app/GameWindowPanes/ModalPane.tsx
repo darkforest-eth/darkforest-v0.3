@@ -12,6 +12,7 @@ import {
   UpgradeIcon,
   TwitterIcon,
   BroadcastIcon,
+  ShareIcon,
 } from '../Icons';
 import { TooltipTrigger } from './Tooltip';
 
@@ -55,6 +56,7 @@ export enum ModalName {
   UpgradeDetails,
   TwitterVerification,
   TwitterBroadcast,
+  MapShare,
 }
 
 export function ModalIcon({
@@ -72,6 +74,7 @@ export function ModalIcon({
     else if (modal === ModalName.UpgradeDetails) return <UpgradeIcon />;
     else if (modal === ModalName.TwitterVerification) return <TwitterIcon />;
     else if (modal === ModalName.TwitterBroadcast) return <BroadcastIcon />;
+    else if (modal === ModalName.MapShare) return <ShareIcon />;
     return <span>T</span>;
   };
 
