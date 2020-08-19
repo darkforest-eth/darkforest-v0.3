@@ -89,7 +89,7 @@ class GameManager extends EventEmitter implements AbstractGameManager {
     return this.contractConstants.PLANET_RARITY;
   }
 
-  private readonly endTimeSeconds: number = 1597464000;
+  private readonly endTimeSeconds: number = 1609372800;
 
   private constructor(
     account: EthAddress | null,

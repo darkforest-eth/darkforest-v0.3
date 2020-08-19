@@ -9,7 +9,7 @@ import dfstyles from '../../styles/dfstyles';
 import { PlanetThumb, PlanetLink } from './PlanetDexPane';
 
 const LeaderboardWrapper = styled.div`
-  width: 36em;
+  width: 42em;
   min-height: 15em;
   max-height: 24em;
   overflow-y: scroll;
@@ -48,6 +48,7 @@ const LeaderboardWrapper = styled.div`
       }
       &:nth-child(4) {
         width: 4em;
+        margin-left: 1em;
       }
     }
 
@@ -158,6 +159,11 @@ export default function LeaderboardPane({
               <u>Top Planets</u>
             </Sub>
           </span>
+          <span>
+            <Sub>
+              <u>Score</u>
+            </Sub>
+          </span>
         </div>
         {scoreboard.map((entry, idx) => (
           <div
@@ -190,6 +196,7 @@ export default function LeaderboardPane({
                 </span>
               ))}
             </span>
+            <span>{Math.floor(entry.score)}</span>
           </div>
         ))}
       </LeaderboardWrapper>

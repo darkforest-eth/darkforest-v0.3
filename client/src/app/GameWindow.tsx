@@ -130,11 +130,15 @@ export default function GameWindow() {
       update();
       if (!uiManager) return;
       // need to copy in order to refresh the refs for react
-      setSelected(_.clone(uiManager.getSelectedPlanet()));
+      // this is super slow for some reason?
+      // setSelected(_.clone(uiManager.getSelectedPlanet()));
+      const newPlanet = uiManager.getSelectedPlanet();
+      if (!newPlanet) setSelected(null);
+      else setSelected(Object.assign({}, newPlanet));
       localStorage.setItem('lastUpdated', Date.now().toString());
     };
 
-    const intervalId = setInterval(refreshUI, 2000);
+    const intervalId = setInterval(refreshUI, 10000);
     // const intervalId = 0;
 
     const uiEmitter = UIEmitter.getInstance();

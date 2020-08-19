@@ -388,8 +388,12 @@ class EthereumAPI extends EventEmitter {
   }
 
   async getConstants(): Promise<ContractConstants> {
+    console.log('getting constants');
     const terminalEmitter = TerminalEmitter.getInstance();
-    terminalEmitter.println('Getting game constants...', TerminalTextStyle.Sub);
+    terminalEmitter.println(
+      '(1/6) Getting game constants...',
+      TerminalTextStyle.Sub
+    );
 
     const contract = this.contract;
     const res = await Promise.all([
@@ -419,7 +423,7 @@ class EthereumAPI extends EventEmitter {
     );
 
     terminalEmitter.println(
-      'Getting default planet stats...',
+      '(2/6) Getting default planet stats...',
       TerminalTextStyle.Sub
     );
     const rawDefaults: RawDefaults = await contract.getDefaultStats();
@@ -468,6 +472,7 @@ class EthereumAPI extends EventEmitter {
   }
 
   async getPlayers(): Promise<PlayerMap> {
+    console.log('getting players');
     const contract = this.contract;
     const nPlayers: number = await contract.getNPlayers();
 
@@ -514,47 +519,57 @@ class EthereumAPI extends EventEmitter {
   }
 
   async getAllArrivals(): Promise<QueuedArrival[]> {
+    console.log('getting arrivals');
     const contract = this.contract;
+    const terminalEmitter = TerminalEmitter.getInstance();
+    terminalEmitter.println('(3/6) Getting pending moves...');
     const nPlanets: number = await contract.getNPlanets();
 
     const arrivalsUnflattened = await aggregateBulkGetter<QueuedArrival[]>(
       nPlanets,
-      20,
+      60,
       async (start, end) => {
         return (
           await contract.bulkGetPlanetArrivals(start, end)
         ).map((arrivals: RawArrivalData[]) =>
           arrivals.map(this.rawArrivalToObject)
         );
-      }
+      },
+      true
     );
 
     return _.flatten(arrivalsUnflattened);
   }
 
   async getPlanets(): Promise<PlanetMap> {
+    console.log('getting planets');
     const contract = this.contract;
     const terminalEmitter = TerminalEmitter.getInstance();
-    terminalEmitter.println('Getting planet data...');
     const nPlanets: number = await contract.getNPlanets();
 
+    terminalEmitter.println('(4/6) Getting planet IDs...');
     const planetIds = await aggregateBulkGetter<BigInteger>(
       nPlanets,
       60,
-      async (start, end) => await contract.bulkGetPlanetIds(start, end)
+      async (start, end) => await contract.bulkGetPlanetIds(start, end),
+      true
     );
-    const rawPlanets = await aggregateBulkGetter<RawPlanetData>(
-      nPlanets,
-      60,
-      async (start, end) => await contract.bulkGetPlanets(start, end)
-    );
+    terminalEmitter.println('(5/6) Getting planet metadata...');
     const rawPlanetsExtendedInfo = await aggregateBulkGetter<
       RawPlanetExtendedInfo
     >(
       nPlanets,
       60,
       async (start, end) =>
-        await contract.bulkGetPlanetsExtendedInfo(start, end)
+        await contract.bulkGetPlanetsExtendedInfo(start, end),
+      true
+    );
+    terminalEmitter.println('(6/6) Getting planet data...');
+    const rawPlanets = await aggregateBulkGetter<RawPlanetData>(
+      nPlanets,
+      60,
+      async (start, end) => await contract.bulkGetPlanets(start, end),
+      true
     );
 
     const planets: PlanetMap = {};

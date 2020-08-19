@@ -12,6 +12,7 @@ import {
 import { address, emptyAddress } from './CheckedTypeUtils';
 import _ from 'lodash';
 import { useState, useCallback } from 'react';
+import TerminalEmitter from './TerminalEmitter';
 
 //https://stackoverflow.com/questions/53215285/how-can-i-force-component-to-re-render-with-hooks-in-react
 export function useForceUpdate() {
@@ -239,14 +240,41 @@ export const hasOwner = (planet: Planet) => {
 export const aggregateBulkGetter = async <T>(
   total: number,
   querySize: number,
-  getterFn: (startIdx: number, endIdx: number) => Promise<T[]>
+  getterFn: (startIdx: number, endIdx: number) => Promise<T[]>,
+  printProgress = false
 ) => {
+  const terminalEmitter = TerminalEmitter.getInstance();
   const promises: Promise<T[]>[] = [];
+  let soFar = 0;
   for (let i = 0; i < total / querySize; i += 1) {
     const start = i * querySize;
     const end = Math.min((i + 1) * querySize, total);
-    promises.push(getterFn(start, end));
+    promises.push(
+      getterFn(start, end)
+        .then((res) => {
+          if (
+            printProgress &&
+            Math.floor((soFar * 20) / total) !==
+              Math.floor(((soFar + querySize) * 20) / total)
+          ) {
+            // print every 5%
+            const percent = Math.floor(((soFar + querySize) * 20) / total) * 5;
+            terminalEmitter.print(`${percent}%... `);
+          }
+          soFar += querySize;
+          return res;
+        })
+        .catch((err) => {
+          console.error(
+            `error ${JSON.stringify(err)} occurred querying ${start}-${end}`
+          );
+          return [];
+        })
+    );
   }
   const unflattenedResults = await Promise.all(promises);
+  if (printProgress) {
+    terminalEmitter.newline();
+  }
   return _.flatten(unflattenedResults);
 };
