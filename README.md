@@ -4,7 +4,7 @@ Dark Forest is an massively multiplayer online real-time strategy (MMORTS) space
 
 ## Project Structure
 
-The Dark Forest repository is composed of three main components"
+The Dark Forest repository is composed of three main components
 
 1. `/client` contains the game's user interface
 2. `/eth` contains the game's smart contract code
@@ -33,7 +33,7 @@ After the installation is finished, you can run `node --version` to verify that 
 
 Refer to [Yarn's official documentation](https://classic.yarnpkg.com/en/docs/install) for the installation guide.
 
-After you have Yarn installed, run the following commands in the root director install the remaining dev depencies:
+After you have Yarn installed, run the following commands in the root directory to install the remaining dev dependencies:
 
 ```
 yarn global add ganache-cli
@@ -42,7 +42,7 @@ yarn install
 
 ### Client Development Setup
 
-All of our client related code are located in the `/client` directory.
+All of our client related code is located in the `/client` directory.
 
 Currently, after following the setup below, you will be able to have a locally running client that will point towards the current playtest contract on Ropsten. The production contract address is stored in `/client/src/utils/prod_contract_addr.ts`.
 
@@ -55,10 +55,10 @@ yarn start:prod
 
 ### Smart Contract Development Setup
 
-All of our smartcontract related code are located in the `/eth` directory.
+All of our smart contract related code is located in the `/eth` directory.
 
--   `/eth/contracts` contains the smartcontract code written in solidity
--   `/eth/test` contains the test for the smartcontract written in Javascript
+-   `/eth/contracts` contains the smart contract code written in solidity
+-   `/eth/test` contains the test for the smart contract written in Javascript
 
 #### Installing Dependenciees
 
@@ -79,7 +79,7 @@ yarn test
 
 #### Deploying Contracts Locally
 
-We use [OpenZeppelin CLI](https://docs.openzeppelin.com/cli/2.8/) to manage the deployment our contracts instead of using Truffle. We use it because it works out of the box with OpenZeppelin upgradeable contract system.
+We use [OpenZeppelin CLI](https://docs.openzeppelin.com/cli/2.8/) to manage the deployment of our contracts instead of using Truffle. We use it because it works out of the box with OpenZeppelin upgradeable contract system.
 
 You can easily deploy contract locally by running the local deployment at the project root directory:
 
